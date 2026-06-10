@@ -1,39 +1,51 @@
-
 {% extends "base.html" %}
 {% block content %}
+
+<div class="section-label">Användare ({{ users|length }}/{{ config.max_users }})</div>
 <div class="card">
-    <h2>Användare ({{ users|length }}/{{ config.max_users }})</h2>
     {% for username, user in users.items() %}
-    <div class="feed-item">
-        <div>
-            <div class="feed-name">{{ username }}</div>
-            <div class="episode-date">Skapad: {{ user.created[:10] }}</div>
+    <div class="list-item" style="cursor:default">
+        <div class="list-item-left">
+            <div class="list-item-title">
+                {{ username }}
+                {% if username == 'admin' %}
+                <span class="badge badge-blue" style="margin-left:6px">Admin</span>
+                {% endif %}
+            </div>
+            <div class="list-item-subtitle">Skapad {{ user.created[:10] }}</div>
         </div>
-        {% if username != 'admin' %}
-        <form method="POST" action="/admin/delete_user" onsubmit="return confirm('Ta bort {{ username }}?')">
-            <input type="hidden" name="username" value="{{ username }}">
-            <button type="submit" class="btn btn-danger btn-small">Ta bort</button>
-        </form>
-        {% endif %}
+        <div class="list-item-right">
+            {% if username != 'admin' %}
+            <form method="POST" action="/admin/delete_user" onsubmit="return confirm('Ta bort {{ username }}?')">
+                <input type="hidden" name="username" value="{{ username }}">
+                <button type="submit" class="btn btn-danger btn-small">Ta bort</button>
+            </form>
+            {% endif %}
+        </div>
     </div>
     {% endfor %}
 </div>
 
+<div class="section-label">Inbjudningskoder</div>
 <div class="card">
-    <h2>Inbjudningskoder</h2>
-    <form method="POST" action="/admin/create_code">
-        <button type="submit" class="btn btn-primary">Skapa ny kod</button>
-    </form>
-    <br>
+    <div class="card-body" style="padding-bottom:12px">
+        <form method="POST" action="/admin/create_code">
+            <button type="submit" class="btn btn-primary">+ Skapa ny kod</button>
+        </form>
+    </div>
     {% for code, info in codes.items() %}
-    <div class="history-item">
-        <span style="font-family:monospace;font-size:16px;font-weight:600">{{ code }}</span>
-        {% if info.used %}
-            <span class="badge" style="background:#888;margin-left:8px">Använd</span>
-        {% else %}
-            <span class="badge badge-green" style="margin-left:8px">Aktiv</span>
-        {% endif %}
-        <span style="color:#888;font-size:12px;margin-left:8px">{{ info.created[:10] }}</span>
+    <div class="list-item" style="cursor:default">
+        <div class="list-item-left">
+            <div class="list-item-title" style="font-family:monospace;font-size:18px;letter-spacing:2px">{{ code }}</div>
+            <div class="list-item-subtitle">Skapad {{ info.created[:10] }}</div>
+        </div>
+        <div class="list-item-right">
+            {% if info.used %}
+            <span class="badge badge-gray">Använd</span>
+            {% else %}
+            <span class="badge badge-green">Aktiv</span>
+            {% endif %}
+        </div>
     </div>
     {% endfor %}
 </div>

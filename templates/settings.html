@@ -1,23 +1,32 @@
-
 {% extends "base.html" %}
 {% block content %}
+
+<div class="section-label">Notiser</div>
 <div class="card">
-    <h2>Inställningar</h2>
-    {% if message %}
-    <div class="alert alert-success">{{ message }}</div>
-    {% endif %}
-    <label style="font-size:14px;color:#888;display:block;margin-bottom:6px">Ntfy-ämne för notiser på iPhone</label>
-    <input type="text" id="ntfy" value="{{ ntfy_topic }}" placeholder="t.ex. mittnamn-cleanpod">
-    <p style="font-size:12px;color:#888;margin-bottom:12px">Ladda ner Ntfy på iPhone och prenumerera på samma ämne för att få notiser när ett avsnitt är klart.</p>
-    <button class="btn btn-primary" onclick="saveSettings()">Spara</button>
+    <div class="card-body">
+        {% if message %}
+        <div class="alert alert-success">{{ message }}</div>
+        {% endif %}
+        <p style="font-size:14px;color:#8e8e93;margin-bottom:12px">
+            Ladda ner <strong>Ntfy</strong> på iPhone och prenumerera på ditt ämne för att få notiser när ett avsnitt är klart.
+        </p>
+        <div class="input-group" style="margin-bottom:12px">
+            <input type="text" id="ntfy" value="{{ ntfy_topic }}" placeholder="t.ex. dittnamn-cleanpod">
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Spara</button>
+    </div>
 </div>
 
+<div class="section-label">Byt lösenord</div>
 <div class="card">
-    <h2>Byt lösenord</h2>
-    <input type="password" id="oldpw" placeholder="Nuvarande lösenord">
-    <input type="password" id="newpw" placeholder="Nytt lösenord (minst 6 tecken)">
-    <button class="btn btn-primary" onclick="changePassword()">Byt lösenord</button>
-    <div id="pwMsg"></div>
+    <div class="card-body">
+        <div class="input-group" style="margin-bottom:12px">
+            <input type="password" id="oldpw" placeholder="Nuvarande lösenord">
+            <input type="password" id="newpw" placeholder="Nytt lösenord (minst 6 tecken)">
+        </div>
+        <button class="btn btn-primary" onclick="changePassword()">Byt lösenord</button>
+        <div id="pwMsg"></div>
+    </div>
 </div>
 
 <a href="/" class="btn btn-secondary">← Tillbaka</a>
@@ -46,8 +55,12 @@ async function changePassword() {
     });
     const data = await res.json();
     document.getElementById('pwMsg').innerHTML = data.ok
-        ? '<div class="alert alert-success">Lösenord bytt!</div>'
-        : `<div class="alert alert-error">${data.error}</div>`;
+        ? '<div class="alert alert-success" style="margin-top:8px">✓ Lösenord bytt!</div>'
+        : `<div class="alert alert-error" style="margin-top:8px">${data.error}</div>`;
+    if (data.ok) {
+        document.getElementById('oldpw').value = '';
+        document.getElementById('newpw').value = '';
+    }
 }
 </script>
 {% endblock %}

@@ -2,99 +2,129 @@
 {% block content %}
 
 <div class="tab-bar">
-    <button class="tab active" onclick="showTab('podcasts')">Podcasts</button>
-    <button class="tab" onclick="showTab('episodes')">Avsnitt</button>
-    <button class="tab" onclick="showTab('history')">Historik</button>
-    <button class="tab" onclick="showTab('feed')">Min feed</button>
+    <button class="tab active" onclick="showTab('podcasts')">🎙 Podcasts</button>
+    <button class="tab" onclick="showTab('episodes')">📋 Avsnitt</button>
+    <button class="tab" onclick="showTab('history')">🕐 Historik</button>
+    <button class="tab" onclick="showTab('feed')">📻 Min feed</button>
 </div>
 
 <!-- PODCASTS -->
 <div id="tab-podcasts">
+    {% if feeds %}
+    <div class="section-label">Mina podcasts</div>
     <div class="card">
-        <h2>Mina podcasts</h2>
-        {% if feeds %}
-            {% for feed in feeds %}
-            <div class="feed-item">
-                <div>
-                    <div class="feed-name">{{ feed.name }}</div>
-                    <div class="episode-date">{{ feed.url[:40] }}...</div>
-                </div>
-                <div style="display:flex;gap:8px">
-                    <button class="btn btn-primary btn-small" onclick="selectFeed('{{ feed.url }}', '{{ feed.name }}')">Välj</button>
-                    <button class="btn btn-danger btn-small" onclick="removeFeed('{{ feed.url }}')">✕</button>
-                </div>
+        {% for feed in feeds %}
+        <div class="list-item">
+            <div class="list-item-left" onclick="selectFeed('{{ feed.url }}', '{{ feed.name }}')">
+                <div class="list-item-title">{{ feed.name }}</div>
+                <div class="list-item-subtitle">{{ feed.url[:45] }}...</div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p class="empty">Inga podcasts tillagda än.<br>Lägg till en nedan!</p>
-        {% endif %}
+            <div class="list-item-right">
+                <button class="btn btn-primary btn-small" onclick="selectFeed('{{ feed.url }}', '{{ feed.name }}')">Välj</button>
+                <button class="btn btn-danger btn-small" onclick="removeFeed('{{ feed.url }}')">✕</button>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-
+    {% else %}
     <div class="card">
-        <h2>Lägg till podcast</h2>
-        <input type="text" id="feedName" placeholder="Namn (t.ex. Alex & Sigge)">
-        <input type="url" id="feedUrl" placeholder="RSS-feed URL">
-        <button class="btn btn-primary" onclick="addFeed()">Lägg till</button>
-        <div id="addFeedMsg"></div>
+        <div class="empty">
+            <div class="empty-icon">🎙</div>
+            <strong>Inga podcasts än</strong><br>
+            Lägg till din första podcast nedan
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="section-label">Lägg till podcast</div>
+    <div class="card">
+        <div class="card-body">
+            <div class="input-group" style="margin-bottom:12px">
+                <input type="text" id="feedName" placeholder="Namn (t.ex. Alex & Sigge)">
+                <input type="url" id="feedUrl" placeholder="RSS-feed URL">
+            </div>
+            <button class="btn btn-primary" onclick="addFeed()">Lägg till podcast</button>
+            <div id="addFeedMsg"></div>
+        </div>
     </div>
 </div>
 
 <!-- AVSNITT -->
 <div id="tab-episodes" style="display:none">
-    <div class="card">
-        <h2 id="episodesTitle">Välj en podcast först</h2>
-        <div id="episodeList"><p class="empty">Gå till Podcasts och välj en feed.</p></div>
+    <div class="section-label" id="episodesLabel">Välj en podcast först</div>
+    <div class="card" id="episodeCard">
+        <div class="empty">
+            <div class="empty-icon">👆</div>
+            Gå till Podcasts och tryck Välj
+        </div>
     </div>
-    <div class="card" id="processCard" style="display:none">
+    <div id="processCard" style="display:none">
         <button class="btn btn-primary" onclick="processSelected()">▶ Bearbeta valt avsnitt</button>
     </div>
-    <div class="card" id="statusCard" style="display:none">
-        <h2>Status</h2>
-        <div class="status-box" id="statusBox"></div>
+    <div id="statusSection" style="display:none">
+        <div class="section-label">Status</div>
+        <div class="card">
+            <div class="card-body">
+                <div class="status-box" id="statusBox">Väntar...</div>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- HISTORIK -->
 <div id="tab-history" style="display:none">
+    {% if history %}
+    <div class="section-label">Bearbetade avsnitt</div>
     <div class="card">
-        <h2>Bearbetade avsnitt</h2>
-        {% if history %}
-            {% for h in history %}
-            <div class="history-item">
-                <div style="font-weight:500">{{ h.title[:55] }}</div>
-                <div style="color:#888;font-size:12px;margin-top:2px">
-                    {{ h.podcast }} · {{ h.removed_s|int }}s borttaget · {{ h.date[:10] }}
-                </div>
+        {% for h in history %}
+        <div class="list-item" style="cursor:default">
+            <div class="list-item-left">
+                <div class="list-item-title">{{ h.title[:50] }}</div>
+                <div class="list-item-subtitle">{{ h.podcast }} · {{ h.removed_s|int }}s borttaget · {{ h.date[:10] }}</div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p class="empty">Inga avsnitt bearbetade än.</p>
-        {% endif %}
+            <div class="list-item-right">
+                <span class="badge badge-green">✓</span>
+            </div>
+        </div>
+        {% endfor %}
     </div>
+    {% else %}
+    <div class="card">
+        <div class="empty">
+            <div class="empty-icon">🕐</div>
+            <strong>Ingen historik än</strong><br>
+            Bearbeta ett avsnitt för att komma igång
+        </div>
+    </div>
+    {% endif %}
 </div>
 
-<!-- FEED -->
+<!-- MIN FEED -->
 <div id="tab-feed" style="display:none">
+    <div class="section-label">Din personliga RSS-feed</div>
     <div class="card">
-        <h2>Din personliga RSS-feed</h2>
-        <p style="font-size:14px;color:#888;margin-bottom:16px">Prenumerera på denna adress i Overcast:</p>
-        <div style="background:#f2f2f7;padding:12px;border-radius:8px;font-size:13px;word-break:break-all;margin-bottom:16px">
-            {{ config.base_url }}/feed/{{ username }}/feed.xml
+        <div class="card-body">
+            <p style="font-size:14px;color:#8e8e93;margin-bottom:12px">Kopiera och lägg till i Overcast på din iPhone:</p>
+            <div class="feed-url">{{ config.base_url }}/feed/{{ username }}/feed.xml</div>
+            <button class="btn btn-primary" onclick="copyFeed()">Kopiera adress</button>
         </div>
-        <button class="btn btn-primary" onclick="copyFeed()">Kopiera adress</button>
     </div>
+
+    {% if files %}
+    <div class="section-label">Reklamfria filer</div>
     <div class="card">
-        <h2>Reklamfria filer</h2>
-        {% if files %}
-            {% for f in files %}
-            <div class="history-item">
-                <a href="/feed/{{ username }}/{{ f.name }}" style="font-size:14px">{{ f.name[:55] }}</a>
+        {% for f in files %}
+        <div class="list-item">
+            <div class="list-item-left">
+                <div class="list-item-title">{{ f.name[:50] }}</div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p class="empty">Inga filer än.</p>
-        {% endif %}
+            <div class="list-item-right">
+                <a href="/feed/{{ username }}/{{ f.name }}" class="badge badge-blue">Lyssna</a>
+            </div>
+        </div>
+        {% endfor %}
     </div>
+    {% endif %}
 </div>
 
 <script>
@@ -103,11 +133,9 @@ let selectedFeedName = '';
 let currentJobId = null;
 
 function showTab(name) {
-    ['podcasts','episodes','history','feed'].forEach(t => {
+    ['podcasts','episodes','history','feed'].forEach((t, i) => {
         document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
-    });
-    document.querySelectorAll('.tab').forEach((tab, i) => {
-        tab.classList.toggle('active', ['podcasts','episodes','history','feed'][i] === name);
+        document.querySelectorAll('.tab')[i].classList.toggle('active', t === name);
     });
 }
 
@@ -115,7 +143,10 @@ async function addFeed() {
     const name = document.getElementById('feedName').value.trim();
     const url  = document.getElementById('feedUrl').value.trim();
     const msg  = document.getElementById('addFeedMsg');
-    if (!name || !url) { msg.innerHTML = '<div class="alert alert-error">Fyll i både namn och URL.</div>'; return; }
+    if (!name || !url) {
+        msg.innerHTML = '<div class="alert alert-error" style="margin-top:8px">Fyll i både namn och URL.</div>';
+        return;
+    }
     const res  = await fetch('/api/add_feed', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -125,7 +156,7 @@ async function addFeed() {
     if (data.ok) {
         location.reload();
     } else {
-        msg.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+        msg.innerHTML = `<div class="alert alert-error" style="margin-top:8px">${data.error}</div>`;
     }
 }
 
@@ -143,27 +174,35 @@ async function selectFeed(url, name) {
     selectedFeedName = name;
     selectedEpisode  = null;
     showTab('episodes');
-    document.getElementById('episodesTitle').textContent = name;
-    document.getElementById('episodeList').innerHTML = '<p class="empty">Hämtar avsnitt...</p>';
+    document.getElementById('episodesLabel').textContent = name;
+    document.getElementById('episodeCard').innerHTML = '<div class="empty"><span class="spinner"></span>Hämtar avsnitt...</div>';
     document.getElementById('processCard').style.display = 'none';
+    document.getElementById('statusSection').style.display = 'none';
+
     const res  = await fetch('/api/episodes?url=' + encodeURIComponent(url));
     const data = await res.json();
+
     if (!data.episodes.length) {
-        document.getElementById('episodeList').innerHTML = '<p class="empty">Inga avsnitt hittades.</p>';
+        document.getElementById('episodeCard').innerHTML = '<div class="empty"><div class="empty-icon">😕</div>Inga avsnitt hittades.</div>';
         return;
     }
+
     let html = '';
     data.episodes.forEach((ep, i) => {
-        html += `<div class="episode-item" onclick="selectEpisode(${i})" id="ep_${i}" data-ep='${JSON.stringify(ep).replace(/'/g, "&#39;")}'>
-            <div class="episode-title">${ep.title.substring(0,60)}</div>
-            <div class="episode-date">${ep.published.substring(0,16)}</div>
+        const epData = JSON.stringify(ep).replace(/'/g, "&#39;");
+        html += `<div class="list-item" onclick="selectEpisode(${i})" id="ep_${i}" data-ep='${epData}'>
+            <div class="list-item-left">
+                <div class="list-item-title">${ep.title.substring(0,55)}</div>
+                <div class="list-item-subtitle">${ep.published.substring(0,16)}</div>
+            </div>
+            <div class="list-item-right chevron">›</div>
         </div>`;
     });
-    document.getElementById('episodeList').innerHTML = html;
+    document.getElementById('episodeCard').innerHTML = html;
 }
 
 function selectEpisode(i) {
-    document.querySelectorAll('.episode-item').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.list-item').forEach(el => el.classList.remove('selected'));
     const el = document.getElementById('ep_' + i);
     el.classList.add('selected');
     selectedEpisode = JSON.parse(el.dataset.ep);
@@ -172,9 +211,10 @@ function selectEpisode(i) {
 
 async function processSelected() {
     if (!selectedEpisode) return;
-    document.getElementById('statusCard').style.display = 'block';
-    document.getElementById('statusBox').textContent = '⏳ Startar...';
+    document.getElementById('statusSection').style.display = 'block';
+    document.getElementById('statusBox').textContent = '⏳ Startar bearbetning...';
     document.getElementById('statusBox').className = 'status-box status-running';
+
     const res  = await fetch('/api/process', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -194,14 +234,16 @@ async function pollStatus() {
     const box  = document.getElementById('statusBox');
     box.textContent = data.message;
     box.className   = 'status-box status-' + data.state;
-    if (data.state === 'running') {
-        setTimeout(pollStatus, 4000);
-    }
+    if (data.state === 'running') setTimeout(pollStatus, 4000);
 }
 
 function copyFeed() {
     const url = '{{ config.base_url }}/feed/{{ username }}/feed.xml';
-    navigator.clipboard.writeText(url).then(() => alert('Kopierad!'));
+    navigator.clipboard.writeText(url).then(() => {
+        alert('✓ Kopierad till urklipp!');
+    }).catch(() => {
+        prompt('Kopiera denna adress:', url);
+    });
 }
 </script>
 {% endblock %}
