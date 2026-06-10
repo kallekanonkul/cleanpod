@@ -2,188 +2,68 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
     <title>CleanPod</title>
     <link rel="manifest" href="/static/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CleanPod">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
-    <meta name="theme-color" content="#007aff">
+    <meta name="theme-color" content="#0d0d0d">
     <style>
         :root {
-            --bg: #f2f2f7;
-            --surface: #ffffff;
-            --surface2: #f9f9f9;
-            --border: #e5e5ea;
-            --accent: #007aff;
-            --accent-dark: #0062cc;
-            --text: #000000;
-            --muted: #8e8e93;
-            --success: #34c759;
-            --error: #ff3b30;
-            --warning: #ff9500;
-            --radius: 12px;
-            --player-height: 80px;
+            --bg:         #0d0d0d;
+            --surface:    #1a1a1a;
+            --surface2:   #242424;
+            --surface3:   #2e2e2e;
+            --border:     #2e2e2e;
+            --accent:     #7B5EA7;
+            --accent2:    #9B7EC8;
+            --cyan:       #00C2B2;
+            --text:       #ffffff;
+            --text2:      #b0b0b0;
+            --muted:      #666666;
+            --success:    #30d158;
+            --error:      #ff453a;
+            --radius:     14px;
+            --radius-lg:  20px;
+            --nav-height: 82px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        html { background: var(--bg); }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
-            padding-bottom: calc(var(--player-height) + 16px);
+            padding-bottom: calc(var(--nav-height) + 70px + var(--safe-bottom));
+            overflow-x: hidden;
         }
-        .header {
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 20px;
-            height: 56px;
+
+        /* ── Top header ── */
+        .top-header {
+            padding: 16px 20px 8px;
+            padding-top: calc(16px + env(safe-area-inset-top, 0px));
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
-        .header-logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text);
-            text-decoration: none;
+        .top-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
-        .header-logo .icon {
-            width: 30px;
-            height: 30px;
-            background: var(--accent);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .header-actions a {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 500;
-        }
-        .header-user { font-size: 13px; color: var(--muted); }
-        .container { max-width: 540px; margin: 0 auto; padding: 20px 16px; }
-        .card { background: var(--surface); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
-        .card-body { padding: 16px 20px; }
-        .card-body h2 { font-size: 17px; font-weight: 600; margin-bottom: 14px; }
-        input[type="text"], input[type="password"], input[type="url"], input[type="email"] {
-            width: 100%; padding: 13px 16px; border: none;
-            border-bottom: 1px solid var(--border); background: transparent;
-            font-size: 16px; color: var(--text); outline: none; -webkit-appearance: none;
-        }
-        input::placeholder { color: var(--muted); }
-        .input-group {
-            background: var(--surface); border-radius: var(--radius);
-            overflow: hidden; border: 1px solid var(--border); margin-bottom: 12px;
-        }
-        .input-group input { border-bottom: 1px solid var(--border); }
-        .input-group input:last-child { border-bottom: none; }
-        .btn {
-            display: block; width: 100%; padding: 14px; border-radius: var(--radius);
-            font-size: 16px; font-weight: 600; border: none; cursor: pointer;
-            text-align: center; text-decoration: none; margin-bottom: 8px;
-            -webkit-appearance: none; transition: opacity 0.15s;
-        }
-        .btn:active { opacity: 0.7; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-secondary { background: var(--border); color: var(--text); }
-        .btn-danger { background: var(--error); color: white; }
-        .btn-small { padding: 7px 14px; font-size: 14px; border-radius: 8px; width: auto; display: inline-block; margin: 0; }
-        .alert { padding: 12px 16px; border-radius: var(--radius); margin-bottom: 12px; font-size: 14px; font-weight: 500; }
-        .alert-error { background: #fff2f2; color: var(--error); }
-        .alert-success { background: #f0fdf4; color: #166534; }
-        .status-box { padding: 14px 16px; border-radius: var(--radius); background: var(--surface2); font-size: 14px; white-space: pre-wrap; min-height: 60px; line-height: 1.5; }
-        .status-running { background: #fff8e6; color: #92400e; }
-        .status-done { background: #f0fdf4; color: #166534; }
-        .status-error { background: #fff2f2; color: var(--error); }
-        .list-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 13px 20px; border-bottom: 1px solid var(--border);
-            cursor: pointer; transition: background 0.1s;
-        }
-        .list-item:last-child { border-bottom: none; }
-        .list-item:active { background: var(--bg); }
-        .list-item.selected { background: #e8f0fe; }
-        .list-item.playing { background: #f0fdf4; }
-        .list-item-left { flex: 1; min-width: 0; }
-        .list-item-title { font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .list-item-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
-        .list-item-right { display: flex; gap: 8px; align-items: center; margin-left: 12px; flex-shrink: 0; }
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #e8f0fe; color: var(--accent); }
-        .badge-green { background: #f0fdf4; color: #166534; }
-        .badge-gray { background: var(--border); color: var(--muted); }
-        .tab-bar { display: flex; background: var(--surface); border-radius: var(--radius); padding: 3px; margin-bottom: 12px; gap: 2px; }
-        .tab { flex: 1; padding: 8px 4px; text-align: center; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--muted); border: none; background: none; transition: all 0.2s; }
-        .tab.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(0,122,255,0.3); }
-        .empty { text-align: center; color: var(--muted); padding: 32px 20px; font-size: 15px; line-height: 1.5; }
-        .empty-icon { font-size: 40px; margin-bottom: 8px; }
-        .section-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 4px; margin: 20px 0 6px; }
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .feed-url { font-family: "SF Mono", monospace; font-size: 12px; background: var(--bg); padding: 12px 16px; border-radius: 10px; word-break: break-all; color: var(--accent); margin-bottom: 12px; border: 1px solid var(--border); }
-
-        /* ── Inbyggd spelare ── */
-        .player {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: var(--player-height);
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
-            display: none;
-            flex-direction: column;
-            padding: 8px 16px;
-            z-index: 200;
-        }
-        .player.visible { display: flex; }
-        .player-top {
+        .top-header-right {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 6px;
         }
-        .player-title {
-            flex: 1;
-            font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .player-controls {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .player-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 22px;
-            padding: 4px;
-            color: var(--text);
-        }
-        .player-btn-main {
+        .avatar {
             width: 36px;
             height: 36px;
             background: var(--accent);
@@ -191,174 +71,695 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 14px;
+            font-weight: 700;
             color: white;
+            text-decoration: none;
+        }
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--surface2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border: none;
             cursor: pointer;
+            color: var(--text);
+            font-size: 16px;
+            text-decoration: none;
         }
-        .player-progress {
+
+        /* ── Container ── */
+        .container { padding: 0 0 16px; }
+        .section { padding: 0 20px; margin-bottom: 28px; }
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .card-padded { padding: 16px; }
+
+        /* ── Podcast cover card ── */
+        .cover-card {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--surface2);
+            flex-shrink: 0;
+        }
+        .cover-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .cover-card-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 40px 12px 12px;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+        }
+        .cover-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            line-height: 1.2;
+        }
+        .cover-card-sub {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 2px;
+        }
+
+        /* ── Horizontal scroll ── */
+        .hscroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 0 20px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .hscroll::-webkit-scrollbar { display: none; }
+
+        /* ── List items ── */
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.1s;
+            gap: 12px;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-item:active { background: var(--surface2); }
+        .list-item.selected { background: rgba(123,94,167,0.15); }
+        .list-item.playing { background: rgba(0,194,178,0.1); }
+
+        .list-thumb {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            background: var(--surface3);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .list-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .list-thumb-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            background: var(--surface3);
+        }
+
+        .list-info { flex: 1; min-width: 0; }
+        .list-title {
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+        }
+        .list-sub {
+            font-size: 12px;
+            color: var(--text2);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .list-right {
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-shrink: 0;
         }
-        .player-time {
-            font-size: 11px;
-            color: var(--muted);
-            min-width: 36px;
-        }
-        .player-time-right { text-align: right; }
-        .progress-bar {
-            flex: 1;
-            height: 3px;
-            background: var(--border);
-            border-radius: 2px;
-            position: relative;
+
+        /* ── Buttons ── */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
             cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            margin-bottom: 10px;
+            transition: opacity 0.15s, transform 0.1s;
+            -webkit-appearance: none;
         }
-        .progress-fill {
+        .btn:active { opacity: 0.7; transform: scale(0.98); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-secondary { background: var(--surface2); color: var(--text); }
+        .btn-danger { background: var(--error); color: white; }
+        .btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+        .btn-small {
+            padding: 7px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 20px;
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0;
+        }
+
+        /* ── Input ── */
+        .input-group {
+            background: var(--surface2);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            background: transparent;
+            font-size: 16px;
+            color: var(--text);
+            outline: none;
+        }
+        .input-group input:last-child { border-bottom: none; }
+        .input-group input::placeholder { color: var(--muted); }
+
+        /* ── Alerts ── */
+        .alert {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .alert-error { background: rgba(255,69,58,0.15); color: #ff6b6b; }
+        .alert-success { background: rgba(48,209,88,0.15); color: #30d158; }
+
+        /* ── Status box ── */
+        .status-box {
+            padding: 16px;
+            border-radius: var(--radius);
+            background: var(--surface2);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .status-running { background: rgba(123,94,167,0.15); }
+        .status-done { background: rgba(48,209,88,0.12); }
+        .status-error { background: rgba(255,69,58,0.12); }
+
+        /* ── Badge ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .badge-purple { background: rgba(123,94,167,0.25); color: var(--accent2); }
+        .badge-green { background: rgba(48,209,88,0.2); color: #30d158; }
+        .badge-gray { background: var(--surface3); color: var(--muted); }
+
+        /* ── Spinner ── */
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid var(--surface3);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Empty state ── */
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+        }
+        .empty-icon { font-size: 44px; margin-bottom: 12px; }
+        .empty strong { display: block; color: var(--text2); font-size: 16px; margin-bottom: 6px; }
+        .empty p { font-size: 14px; }
+
+        /* ── Section label ── */
+        .section-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 0 20px;
+            margin: 20px 0 8px;
+        }
+
+        /* ── Feed URL ── */
+        .feed-url {
+            font-family: "SF Mono", monospace;
+            font-size: 12px;
+            background: var(--surface2);
+            padding: 12px 16px;
+            border-radius: 10px;
+            word-break: break-all;
+            color: var(--cyan);
+            margin-bottom: 12px;
+        }
+
+        /* ── Mini spelare ── */
+        .mini-player {
+            position: fixed;
+            bottom: calc(var(--nav-height) + var(--safe-bottom));
+            left: 12px; right: 12px;
+            background: rgba(36,36,36,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 10px 14px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 200;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .mini-player.visible { display: flex; }
+        .mini-thumb {
+            width: 42px; height: 42px;
+            border-radius: 8px;
+            background: var(--surface3);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .mini-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .mini-info { flex: 1; min-width: 0; }
+        .mini-title {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mini-progress {
+            height: 2px;
+            background: var(--surface3);
+            border-radius: 1px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .mini-progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 1px;
+            width: 0%;
+        }
+        .mini-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .mini-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+        }
+        .mini-play-btn {
+            width: 36px; height: 36px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        /* ── Bottom navigation ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: calc(var(--nav-height) + var(--safe-bottom));
+            padding-bottom: var(--safe-bottom);
+            background: rgba(18,18,18,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            padding-top: 10px;
+            z-index: 100;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+        .nav-icon {
+            width: 28px; height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--muted);
+            transition: color 0.2s;
+        }
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--muted);
+            transition: color 0.2s;
+        }
+        .nav-item.active .nav-icon,
+        .nav-item.active .nav-label {
+            color: var(--accent);
+        }
+
+        /* ── Tab pages ── */
+        .tab-page { display: none; }
+        .tab-page.active { display: block; }
+
+        /* ── Expanded player ── */
+        .player-sheet {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            padding: 0 24px;
+            padding-top: calc(60px + env(safe-area-inset-top, 0px));
+            padding-bottom: calc(40px + var(--safe-bottom));
+        }
+        .player-sheet.open { display: flex; }
+        .player-sheet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+        .player-sheet-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .player-close {
+            background: var(--surface2);
+            border: none;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .player-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 20px;
+            background: var(--surface2);
+            overflow: hidden;
+            margin-bottom: 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .player-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .player-cover-placeholder {
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+        }
+        .player-meta { margin-bottom: 24px; }
+        .player-ep-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 4px;
+        }
+        .player-pod-name { font-size: 15px; color: var(--text2); }
+        .player-progress-wrap { margin-bottom: 8px; }
+        .player-progress-bar {
+            height: 4px;
+            background: var(--surface3);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+        .player-progress-fill {
             height: 100%;
             background: var(--accent);
             border-radius: 2px;
             width: 0%;
-            transition: width 0.5s linear;
         }
-        .speed-btn {
-            background: var(--border);
+        .player-times {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+        .player-ctrl-btn {
+            background: none;
             border: none;
-            border-radius: 6px;
-            padding: 4px 7px;
-            font-size: 12px;
+            color: var(--text2);
+            font-size: 28px;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .player-play-btn {
+            width: 68px; height: 68px;
+            background: var(--text);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            font-size: 28px;
+            color: var(--bg);
+        }
+        .player-speed {
+            background: var(--surface2);
+            border: none;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             color: var(--text);
         }
-
-        @media (prefers-color-scheme: dark) {
-            :root { --bg: #000000; --surface: #1c1c1e; --surface2: #2c2c2e; --border: #3a3a3c; --text: #ffffff; --muted: #8e8e93; }
-            .header { background: rgba(28,28,30,0.85); }
-            .player { background: rgba(28,28,30,0.95); }
-            .list-item.selected { background: #1a2a4a; }
-            .list-item.playing { background: #0d2a1a; }
-            input { color: white; }
-        }
     </style>
 </head>
 <body>
-<div class="header">
-    <a href="/" class="header-logo">
-        <div class="icon">🎙</div>
-        CleanPod
-    </a>
-    <div class="header-actions">
-        {% if session.username %}
-            <span class="header-user">{{ session.username }}</span>
-            {% if session.username == 'admin' %}
-                <a href="/admin">Admin</a>
-            {% endif %}
-            <a href="/settings">⚙️</a>
-            <a href="/logout">Logga ut</a>
-        {% endif %}
+
+{% block content %}{% endblock %}
+
+<!-- Mini-spelare -->
+<div class="mini-player" id="miniPlayer" onclick="openPlayer()">
+    <div class="mini-thumb" id="miniThumb">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px">🎙</div>
+    </div>
+    <div class="mini-info">
+        <div class="mini-title" id="miniTitle">Inget spelas</div>
+        <div class="mini-progress"><div class="mini-progress-fill" id="miniProgressFill"></div></div>
+    </div>
+    <div class="mini-controls" onclick="event.stopPropagation()">
+        <button class="mini-btn" onclick="skipBack()">↺</button>
+        <button class="mini-play-btn" id="miniPlayBtn" onclick="togglePlay()">▶</button>
+        <button class="mini-btn" onclick="skipForward()">↻</button>
     </div>
 </div>
 
-<div class="container">
-    {% block content %}{% endblock %}
-</div>
-
-<!-- Inbyggd spelare -->
-<div class="player" id="player">
-    <div class="player-top">
-        <div class="player-title" id="playerTitle">Inget spelas</div>
-        <div class="player-controls">
-            <button class="player-btn" onclick="skipBack()">↺</button>
-            <button class="player-btn-main" id="playPauseBtn" onclick="togglePlay()">▶</button>
-            <button class="player-btn" onclick="skipForward()">↻</button>
-            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()">1×</button>
+<!-- Utökad spelare -->
+<div class="player-sheet" id="playerSheet">
+    <div class="player-sheet-header">
+        <span class="player-sheet-title">Spelar nu</span>
+        <button class="player-close" onclick="closePlayer()">✕</button>
+    </div>
+    <div class="player-cover" id="playerCover">
+        <div class="player-cover-placeholder">🎙</div>
+    </div>
+    <div class="player-meta">
+        <div class="player-ep-title" id="playerEpTitle">Inget spelas</div>
+        <div class="player-pod-name" id="playerPodName"></div>
+    </div>
+    <div class="player-progress-wrap">
+        <div class="player-progress-bar" id="playerProgressBar" onclick="seekTo(event)">
+            <div class="player-progress-fill" id="playerProgressFill"></div>
+        </div>
+        <div class="player-times">
+            <span id="playerCurrentTime">0:00</span>
+            <span id="playerTotalTime">0:00</span>
         </div>
     </div>
-    <div class="player-progress">
-        <span class="player-time" id="currentTime">0:00</span>
-        <div class="progress-bar" id="progressBar" onclick="seekTo(event)">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <span class="player-time player-time-right" id="totalTime">0:00</span>
+    <div class="player-controls">
+        <button class="player-speed" id="playerSpeedBtn" onclick="cycleSpeed()">1×</button>
+        <button class="player-ctrl-btn" onclick="skipBack()">↺<span style="font-size:10px;vertical-align:super">15</span></button>
+        <button class="player-play-btn" id="playerPlayBtn" onclick="togglePlay()">▶</button>
+        <button class="player-ctrl-btn" onclick="skipForward()">↻<span style="font-size:10px;vertical-align:super">30</span></button>
+        <div style="width:44px"></div>
     </div>
 </div>
 
-<audio id="audioPlayer" preload="metadata"></audio>
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+    {% if session.username %}
+    <button class="nav-item active" id="nav-hem" onclick="switchTab('hem')">
+        <div class="nav-icon">⌂</div>
+        <span class="nav-label">Hem</span>
+    </button>
+    <button class="nav-item" id="nav-lyssna" onclick="switchTab('lyssna')">
+        <div class="nav-icon">▶</div>
+        <span class="nav-label">Lyssna</span>
+    </button>
+    <button class="nav-item" id="nav-bibliotek" onclick="switchTab('bibliotek')">
+        <div class="nav-icon">☰</div>
+        <span class="nav-label">Bibliotek</span>
+    </button>
+    <button class="nav-item" id="nav-sok" onclick="switchTab('sok')">
+        <div class="nav-icon">⌕</div>
+        <span class="nav-label">Sök</span>
+    </button>
+    {% endif %}
+</nav>
+
+<audio id="audioEl" preload="metadata"></audio>
 
 <script>
-// PWA Service Worker
+// PWA
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/static/sw.js');
 }
 
-// Spelare
-const audio = document.getElementById('audioPlayer');
-const player = document.getElementById('player');
-const playPauseBtn = document.getElementById('playPauseBtn');
-const playerTitle = document.getElementById('playerTitle');
-const progressFill = document.getElementById('progressFill');
-const currentTimeEl = document.getElementById('currentTime');
-const totalTimeEl = document.getElementById('totalTime');
+// ── Spelare ──
+const audio = document.getElementById('audioEl');
 const speeds = [1, 1.25, 1.5, 1.75, 2];
 let speedIdx = 0;
+let currentTrack = null;
 
-function playEpisode(url, title) {
+function playEpisode(url, title, podName, thumbUrl) {
     audio.src = url;
-    playerTitle.textContent = title;
-    player.classList.add('visible');
+    currentTrack = { url, title, podName, thumbUrl };
+    updatePlayerUI();
+    document.getElementById('miniPlayer').classList.add('visible');
     audio.play();
-    playPauseBtn.textContent = '⏸';
-    document.querySelectorAll('.list-item').forEach(el => el.classList.remove('playing'));
+    updatePlayBtn(true);
 }
 
-function togglePlay() {
-    if (audio.paused) {
-        audio.play();
-        playPauseBtn.textContent = '⏸';
-    } else {
-        audio.pause();
-        playPauseBtn.textContent = '▶';
+function updatePlayerUI() {
+    if (!currentTrack) return;
+    document.getElementById('miniTitle').textContent = currentTrack.title;
+    document.getElementById('playerEpTitle').textContent = currentTrack.title;
+    document.getElementById('playerPodName').textContent = currentTrack.podName || '';
+    if (currentTrack.thumbUrl) {
+        document.getElementById('miniThumb').innerHTML = `<img src="${currentTrack.thumbUrl}" onerror="this.parentNode.innerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px>🎙</div>'">`;
+        document.getElementById('playerCover').innerHTML = `<img src="${currentTrack.thumbUrl}" onerror="this.parentNode.innerHTML='<div class=player-cover-placeholder>🎙</div>'">`;
     }
 }
 
+function togglePlay() {
+    if (audio.paused) { audio.play(); updatePlayBtn(true); }
+    else { audio.pause(); updatePlayBtn(false); }
+}
+
+function updatePlayBtn(playing) {
+    const icon = playing ? '⏸' : '▶';
+    document.getElementById('miniPlayBtn').textContent = icon;
+    document.getElementById('playerPlayBtn').textContent = icon;
+}
+
 function skipBack() { audio.currentTime = Math.max(0, audio.currentTime - 15); }
-function skipForward() { audio.currentTime = Math.min(audio.duration, audio.currentTime + 30); }
+function skipForward() { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 30); }
 
 function cycleSpeed() {
     speedIdx = (speedIdx + 1) % speeds.length;
     audio.playbackRate = speeds[speedIdx];
-    document.getElementById('speedBtn').textContent = speeds[speedIdx] + '×';
+    document.getElementById('playerSpeedBtn').textContent = speeds[speedIdx] + '×';
 }
 
 function seekTo(e) {
-    const bar = document.getElementById('progressBar');
+    const bar = document.getElementById('playerProgressBar');
     const pct = e.offsetX / bar.offsetWidth;
-    audio.currentTime = pct * audio.duration;
+    audio.currentTime = pct * (audio.duration || 0);
 }
 
 function formatTime(s) {
-    if (isNaN(s)) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
+    if (!s || isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2,'0')}`;
 }
 
 audio.addEventListener('timeupdate', () => {
     if (!audio.duration) return;
     const pct = (audio.currentTime / audio.duration) * 100;
-    progressFill.style.width = pct + '%';
-    currentTimeEl.textContent = formatTime(audio.currentTime);
+    const fill = pct + '%';
+    document.getElementById('miniProgressFill').style.width = fill;
+    document.getElementById('playerProgressFill').style.width = fill;
+    document.getElementById('playerCurrentTime').textContent = formatTime(audio.currentTime);
 });
-
 audio.addEventListener('loadedmetadata', () => {
-    totalTimeEl.textContent = formatTime(audio.duration);
+    document.getElementById('playerTotalTime').textContent = formatTime(audio.duration);
 });
+audio.addEventListener('ended', () => updatePlayBtn(false));
 
-audio.addEventListener('ended', () => {
-    playPauseBtn.textContent = '▶';
-});
+function openPlayer() { document.getElementById('playerSheet').classList.add('open'); }
+function closePlayer() { document.getElementById('playerSheet').classList.remove('open'); }
+
+// ── Tab navigation ──
+function switchTab(name) {
+    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const page = document.getElementById('page-' + name);
+    const nav  = document.getElementById('nav-' + name);
+    if (page) page.classList.add('active');
+    if (nav)  nav.classList.add('active');
+}
 </script>
 </body>
 </html>
