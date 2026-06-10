@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:400px;margin:40px auto">
+<div class="card">
+    <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:48px">🎙️</div>
+        <h1 style="font-size:24px;margin-top:8px">CleanPod</h1>
+        <p style="color:#888;font-size:14px;margin-top:4px">Reklamfria podcasts</p>
+    </div>
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    <input type="text" id="username" placeholder="Användarnamn" autocomplete="username">
+    <input type="password" id="password" placeholder="Lösenord" autocomplete="current-password">
+    <button class="btn btn-primary" onclick="doLogin()">Logga in</button>
+    <a href="/register" class="btn btn-secondary" style="text-align:center;display:block;margin-top:8px">Registrera med inbjudningskod</a>
+</div>
+</div>
+<script>
+async function doLogin() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/login';
+    ['username','password'].forEach(id => {
+        const input = document.createElement('input');
+        input.name = id;
+        input.value = document.getElementById(id).value;
+        form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+}
+document.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+{% endblock %}

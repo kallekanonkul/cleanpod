@@ -1,0 +1,42 @@
+
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Användare ({{ users|length }}/{{ config.max_users }})</h2>
+    {% for username, user in users.items() %}
+    <div class="feed-item">
+        <div>
+            <div class="feed-name">{{ username }}</div>
+            <div class="episode-date">Skapad: {{ user.created[:10] }}</div>
+        </div>
+        {% if username != 'admin' %}
+        <form method="POST" action="/admin/delete_user" onsubmit="return confirm('Ta bort {{ username }}?')">
+            <input type="hidden" name="username" value="{{ username }}">
+            <button type="submit" class="btn btn-danger btn-small">Ta bort</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2>Inbjudningskoder</h2>
+    <form method="POST" action="/admin/create_code">
+        <button type="submit" class="btn btn-primary">Skapa ny kod</button>
+    </form>
+    <br>
+    {% for code, info in codes.items() %}
+    <div class="history-item">
+        <span style="font-family:monospace;font-size:16px;font-weight:600">{{ code }}</span>
+        {% if info.used %}
+            <span class="badge" style="background:#888;margin-left:8px">Använd</span>
+        {% else %}
+            <span class="badge badge-green" style="margin-left:8px">Aktiv</span>
+        {% endif %}
+        <span style="color:#888;font-size:12px;margin-left:8px">{{ info.created[:10] }}</span>
+    </div>
+    {% endfor %}
+</div>
+
+<a href="/" class="btn btn-secondary">← Tillbaka</a>
+{% endblock %}

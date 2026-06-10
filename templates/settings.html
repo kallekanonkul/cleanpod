@@ -1,0 +1,53 @@
+
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Inställningar</h2>
+    {% if message %}
+    <div class="alert alert-success">{{ message }}</div>
+    {% endif %}
+    <label style="font-size:14px;color:#888;display:block;margin-bottom:6px">Ntfy-ämne för notiser på iPhone</label>
+    <input type="text" id="ntfy" value="{{ ntfy_topic }}" placeholder="t.ex. mittnamn-cleanpod">
+    <p style="font-size:12px;color:#888;margin-bottom:12px">Ladda ner Ntfy på iPhone och prenumerera på samma ämne för att få notiser när ett avsnitt är klart.</p>
+    <button class="btn btn-primary" onclick="saveSettings()">Spara</button>
+</div>
+
+<div class="card">
+    <h2>Byt lösenord</h2>
+    <input type="password" id="oldpw" placeholder="Nuvarande lösenord">
+    <input type="password" id="newpw" placeholder="Nytt lösenord (minst 6 tecken)">
+    <button class="btn btn-primary" onclick="changePassword()">Byt lösenord</button>
+    <div id="pwMsg"></div>
+</div>
+
+<a href="/" class="btn btn-secondary">← Tillbaka</a>
+
+<script>
+async function saveSettings() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/settings';
+    const input = document.createElement('input');
+    input.name = 'ntfy_topic';
+    input.value = document.getElementById('ntfy').value;
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+async function changePassword() {
+    const res = await fetch('/api/change_password', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            old_password: document.getElementById('oldpw').value,
+            new_password: document.getElementById('newpw').value,
+        })
+    });
+    const data = await res.json();
+    document.getElementById('pwMsg').innerHTML = data.ok
+        ? '<div class="alert alert-success">Lösenord bytt!</div>'
+        : `<div class="alert alert-error">${data.error}</div>`;
+}
+</script>
+{% endblock %}

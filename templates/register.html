@@ -1,0 +1,37 @@
+
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:400px;margin:40px auto">
+<div class="card">
+    <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:48px">🎙️</div>
+        <h1 style="font-size:24px;margin-top:8px">Skapa konto</h1>
+        <p style="color:#888;font-size:14px;margin-top:4px">Du behöver en inbjudningskod</p>
+    </div>
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    <input type="text" id="username" placeholder="Välj användarnamn" autocomplete="username">
+    <input type="password" id="password" placeholder="Välj lösenord (minst 6 tecken)" autocomplete="new-password">
+    <input type="text" id="code" placeholder="Inbjudningskod">
+    <button class="btn btn-primary" onclick="doRegister()">Skapa konto</button>
+    <a href="/login" class="btn btn-secondary" style="text-align:center;display:block;margin-top:8px">Tillbaka till inloggning</a>
+</div>
+</div>
+<script>
+async function doRegister() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/register';
+    ['username','password','code'].forEach(id => {
+        const input = document.createElement('input');
+        input.name = id;
+        input.value = document.getElementById(id).value;
+        form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+}
+document.addEventListener('keydown', e => { if(e.key==='Enter') doRegister(); });
+</script>
+{% endblock %}
