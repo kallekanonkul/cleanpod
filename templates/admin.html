@@ -1,54 +1,66 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="top-header">
+    <h1>Admin</h1>
+    <a href="/" class="icon-btn">✕</a>
+</div>
 
-<div class="section-label">Användare ({{ users|length }}/{{ config.max_users }})</div>
-<div class="card">
-    {% for username, user in users.items() %}
-    <div class="list-item" style="cursor:default">
-        <div class="list-item-left">
-            <div class="list-item-title">
-                {{ username }}
-                {% if username == 'admin' %}
-                <span class="badge badge-blue" style="margin-left:6px">Admin</span>
+<div class="section-label">WORKER STATUS</div>
+<div style="padding:0 12px">
+    <div class="card card-padded">
+        <div style="font-size:15px">Pi 4 Worker: <strong>{{ worker_status }}</strong></div>
+    </div>
+</div>
+
+<div class="section-label">ANVÄNDARE ({{ users|length }}/{{ config.max_users }})</div>
+<div style="padding:0 12px">
+    <div class="card">
+        {% for username, user in users.items() %}
+        <div class="list-item" style="cursor:default">
+            <div class="list-thumb">
+                <div style="width:100%;height:100%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white">{{ username[0].upper() }}</div>
+            </div>
+            <div class="list-info">
+                <div class="list-title">
+                    {{ username }}
+                    {% if username == 'admin' %}<span class="badge badge-purple" style="margin-left:6px">Admin</span>{% endif %}
+                </div>
+                <div class="list-sub">Skapad {{ user.created[:10] }}</div>
+            </div>
+            <div class="list-right">
+                {% if username != 'admin' %}
+                <form method="POST" action="/admin/delete_user" onsubmit="return confirm('Ta bort {{ username }}?')" style="margin:0">
+                    <input type="hidden" name="username" value="{{ username }}">
+                    <button type="submit" class="btn btn-danger btn-small">Ta bort</button>
+                </form>
                 {% endif %}
             </div>
-            <div class="list-item-subtitle">Skapad {{ user.created[:10] }}</div>
         </div>
-        <div class="list-item-right">
-            {% if username != 'admin' %}
-            <form method="POST" action="/admin/delete_user" onsubmit="return confirm('Ta bort {{ username }}?')">
-                <input type="hidden" name="username" value="{{ username }}">
-                <button type="submit" class="btn btn-danger btn-small">Ta bort</button>
-            </form>
-            {% endif %}
-        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 
-<div class="section-label">Inbjudningskoder</div>
-<div class="card">
-    <div class="card-body" style="padding-bottom:12px">
-        <form method="POST" action="/admin/create_code">
-            <button type="submit" class="btn btn-primary">+ Skapa ny kod</button>
-        </form>
-    </div>
-    {% for code, info in codes.items() %}
-    <div class="list-item" style="cursor:default">
-        <div class="list-item-left">
-            <div class="list-item-title" style="font-family:monospace;font-size:18px;letter-spacing:2px">{{ code }}</div>
-            <div class="list-item-subtitle">Skapad {{ info.created[:10] }}</div>
+<div class="section-label">INBJUDNINGSKODER</div>
+<div style="padding:0 12px">
+    <form method="POST" action="/admin/create_code" style="margin-bottom:10px">
+        <button type="submit" class="btn btn-primary">+ Skapa ny kod</button>
+    </form>
+    <div class="card">
+        {% for code, info in codes.items() %}
+        <div class="list-item" style="cursor:default">
+            <div class="list-info">
+                <div class="list-title" style="font-family:monospace;font-size:20px;letter-spacing:3px">{{ code }}</div>
+                <div class="list-sub">{{ info.created[:10] }}</div>
+            </div>
+            <div class="list-right">
+                {% if info.used %}
+                <span class="badge badge-gray">Använd</span>
+                {% else %}
+                <span class="badge badge-green">Aktiv</span>
+                {% endif %}
+            </div>
         </div>
-        <div class="list-item-right">
-            {% if info.used %}
-            <span class="badge badge-gray">Använd</span>
-            {% else %}
-            <span class="badge badge-green">Aktiv</span>
-            {% endif %}
-        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
-
-<a href="/" class="btn btn-secondary">← Tillbaka</a>
 {% endblock %}
