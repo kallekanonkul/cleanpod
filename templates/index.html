@@ -5,7 +5,7 @@
     <button class="tab active" onclick="showTab('podcasts')">🎙 Podcasts</button>
     <button class="tab" onclick="showTab('episodes')">📋 Avsnitt</button>
     <button class="tab" onclick="showTab('history')">🕐 Historik</button>
-    <button class="tab" onclick="showTab('feed')">📻 Min feed</button>
+    <button class="tab" onclick="showTab('lyssna')">▶ Lyssna</button>
 </div>
 
 <!-- PODCASTS -->
@@ -99,44 +99,64 @@
     {% endif %}
 </div>
 
-<!-- MIN FEED -->
-<div id="tab-feed" style="display:none">
-    <div class="section-label">Din personliga RSS-feed</div>
-    <div class="card">
-        <div class="card-body">
-            <p style="font-size:14px;color:#8e8e93;margin-bottom:12px">Kopiera och lägg till i Overcast på din iPhone:</p>
-            <div class="feed-url">{{ config.base_url }}/feed/{{ username }}/feed.xml</div>
-            <button class="btn btn-primary" onclick="copyFeed()">Kopiera adress</button>
-        </div>
-    </div>
-
+<!-- LYSSNA -->
+<div id="tab-lyssna" style="display:none">
     {% if files %}
-    <div class="section-label">Reklamfria filer</div>
+    <div class="section-label">Reklamfria avsnitt</div>
     <div class="card">
         {% for f in files %}
-        <div class="list-item">
-            <div class="list-item-left">
-                <div class="list-item-title">{{ f.name[:50] }}</div>
+        <div class="list-item" id="file_{{ loop.index }}">
+            <div class="list-item-left" onclick="playFile('/feed/{{ username }}/{{ f.name }}', '{{ f.name|replace('_clean.mp3','')|replace('_',' ') }}', 'file_{{ loop.index }}')">
+                <div class="list-item-title">{{ f.name|replace('_clean.mp3','')|replace('_',' ')|truncate(50,True,'') }}</div>
+                <div class="list-item-subtitle">Tryck för att lyssna</div>
             </div>
             <div class="list-item-right">
-                <a href="/feed/{{ username }}/{{ f.name }}" class="badge badge-blue">Lyssna</a>
+<button class="btn btn-primary btn-small" onclick="playFile('/feed/{{ username }}/{{ f.name }}', '{{ f.name }}', 'file_{{ loop.index }}')">▶</button>
             </div>
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    <div class="card">
+        <div class="empty">
+            <div class="empty-icon">🎧</div>
+            <strong>Inga avsnitt än</strong><br>
+            Bearbeta ett avsnitt så dyker det upp här
+        </div>
+    </div>
     {% endif %}
+
+    <div class="section-label">Din RSS-feed för Overcast</div>
+    <div class="card">
+        <div class="card-body">
+            <div class="feed-url">{{ config.base_url }}/feed/{{ username }}/feed.xml</div>
+            <button class="btn btn-secondary" onclick="copyFeed()">Kopiera adress</button>
+        </div>
+    </div>
 </div>
 
 <script>
 let selectedEpisode = null;
 let selectedFeedName = '';
 let currentJobId = null;
+let currentFileId = null;
 
 function showTab(name) {
-    ['podcasts','episodes','history','feed'].forEach((t, i) => {
+    ['podcasts','episodes','history','lyssna'].forEach((t, i) => {
         document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
         document.querySelectorAll('.tab')[i].classList.toggle('active', t === name);
     });
+}
+
+function playFile(url, title, fileId) {
+    if (currentFileId) {
+        const prev = document.getElementById(currentFileId);
+        if (prev) prev.classList.remove('playing');
+    }
+    currentFileId = fileId;
+    const el = document.getElementById(fileId);
+    if (el) el.classList.add('playing');
+    playEpisode(url, title);
 }
 
 async function addFeed() {
@@ -195,14 +215,14 @@ async function selectFeed(url, name) {
                 <div class="list-item-title">${ep.title.substring(0,55)}</div>
                 <div class="list-item-subtitle">${ep.published.substring(0,16)}</div>
             </div>
-            <div class="list-item-right chevron">›</div>
+            <div class="list-item-right" style="color:#8e8e93">›</div>
         </div>`;
     });
     document.getElementById('episodeCard').innerHTML = html;
 }
 
 function selectEpisode(i) {
-    document.querySelectorAll('.list-item').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('#episodeCard .list-item').forEach(el => el.classList.remove('selected'));
     const el = document.getElementById('ep_' + i);
     el.classList.add('selected');
     selectedEpisode = JSON.parse(el.dataset.ep);
@@ -234,15 +254,19 @@ async function pollStatus() {
     const box  = document.getElementById('statusBox');
     box.textContent = data.message;
     box.className   = 'status-box status-' + data.state;
-    if (data.state === 'running') setTimeout(pollStatus, 4000);
+    if (data.state === 'running') {
+        setTimeout(pollStatus, 4000);
+    } else if (data.state === 'done') {
+        setTimeout(() => location.reload(), 2000);
+    }
 }
 
 function copyFeed() {
     const url = '{{ config.base_url }}/feed/{{ username }}/feed.xml';
     navigator.clipboard.writeText(url).then(() => {
-        alert('✓ Kopierad till urklipp!');
+        alert('✓ Kopierad!');
     }).catch(() => {
-        prompt('Kopiera denna adress:', url);
+        prompt('Kopiera:', url);
     });
 }
 </script>

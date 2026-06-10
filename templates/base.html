@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>CleanPod</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CleanPod">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <meta name="theme-color" content="#007aff">
     <style>
         :root {
             --bg: #f2f2f7;
@@ -18,6 +24,7 @@
             --error: #ff3b30;
             --warning: #ff9500;
             --radius: 12px;
+            --player-height: 80px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -26,6 +33,7 @@
             color: var(--text);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            padding-bottom: calc(var(--player-height) + 16px);
         }
         .header {
             background: rgba(255,255,255,0.85);
@@ -71,235 +79,167 @@
             font-size: 15px;
             font-weight: 500;
         }
-        .header-user {
-            font-size: 13px;
-            color: var(--muted);
+        .header-user { font-size: 13px; color: var(--muted); }
+        .container { max-width: 540px; margin: 0 auto; padding: 20px 16px; }
+        .card { background: var(--surface); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+        .card-body { padding: 16px 20px; }
+        .card-body h2 { font-size: 17px; font-weight: 600; margin-bottom: 14px; }
+        input[type="text"], input[type="password"], input[type="url"], input[type="email"] {
+            width: 100%; padding: 13px 16px; border: none;
+            border-bottom: 1px solid var(--border); background: transparent;
+            font-size: 16px; color: var(--text); outline: none; -webkit-appearance: none;
         }
-        .container {
-            max-width: 540px;
-            margin: 0 auto;
-            padding: 20px 16px;
-        }
-        .card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-        .card-header {
-            padding: 16px 20px 0;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .card-body {
-            padding: 12px 20px 20px;
-        }
-        .card-body h2 {
-            font-size: 17px;
-            font-weight: 600;
-            margin-bottom: 14px;
-        }
-        input[type="text"],
-        input[type="password"],
-        input[type="url"],
-        input[type="email"] {
-            width: 100%;
-            padding: 13px 16px;
-            border: none;
-            border-bottom: 1px solid var(--border);
-            background: transparent;
-            font-size: 16px;
-            color: var(--text);
-            outline: none;
-            -webkit-appearance: none;
-        }
-        input:last-of-type { border-bottom: none; }
         input::placeholder { color: var(--muted); }
         .input-group {
-            background: var(--surface);
-            border-radius: var(--radius);
-            overflow: hidden;
-            border: 1px solid var(--border);
-            margin-bottom: 12px;
+            background: var(--surface); border-radius: var(--radius);
+            overflow: hidden; border: 1px solid var(--border); margin-bottom: 12px;
         }
         .input-group input { border-bottom: 1px solid var(--border); }
         .input-group input:last-child { border-bottom: none; }
         .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            border-radius: var(--radius);
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            margin-bottom: 8px;
-            -webkit-appearance: none;
-            transition: opacity 0.15s;
+            display: block; width: 100%; padding: 14px; border-radius: var(--radius);
+            font-size: 16px; font-weight: 600; border: none; cursor: pointer;
+            text-align: center; text-decoration: none; margin-bottom: 8px;
+            -webkit-appearance: none; transition: opacity 0.15s;
         }
         .btn:active { opacity: 0.7; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-secondary { background: var(--border); color: var(--text); }
         .btn-danger { background: var(--error); color: white; }
-        .btn-small {
-            padding: 7px 14px;
-            font-size: 14px;
-            border-radius: 8px;
-            width: auto;
-            display: inline-block;
-            margin: 0;
-        }
-        .alert {
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            margin-bottom: 12px;
-            font-size: 14px;
-            font-weight: 500;
-        }
+        .btn-small { padding: 7px 14px; font-size: 14px; border-radius: 8px; width: auto; display: inline-block; margin: 0; }
+        .alert { padding: 12px 16px; border-radius: var(--radius); margin-bottom: 12px; font-size: 14px; font-weight: 500; }
         .alert-error { background: #fff2f2; color: var(--error); }
         .alert-success { background: #f0fdf4; color: #166534; }
-        .status-box {
-            padding: 14px 16px;
-            border-radius: var(--radius);
-            background: var(--surface2);
-            font-size: 14px;
-            white-space: pre-wrap;
-            min-height: 60px;
-            line-height: 1.5;
-        }
+        .status-box { padding: 14px 16px; border-radius: var(--radius); background: var(--surface2); font-size: 14px; white-space: pre-wrap; min-height: 60px; line-height: 1.5; }
         .status-running { background: #fff8e6; color: #92400e; }
         .status-done { background: #f0fdf4; color: #166534; }
         .status-error { background: #fff2f2; color: var(--error); }
         .list-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 13px 20px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            transition: background 0.1s;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 20px; border-bottom: 1px solid var(--border);
+            cursor: pointer; transition: background 0.1s;
         }
         .list-item:last-child { border-bottom: none; }
         .list-item:active { background: var(--bg); }
         .list-item.selected { background: #e8f0fe; }
+        .list-item.playing { background: #f0fdf4; }
         .list-item-left { flex: 1; min-width: 0; }
-        .list-item-title {
-            font-size: 15px;
-            font-weight: 500;
+        .list-item-title { font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .list-item-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .list-item-right { display: flex; gap: 8px; align-items: center; margin-left: 12px; flex-shrink: 0; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-blue { background: #e8f0fe; color: var(--accent); }
+        .badge-green { background: #f0fdf4; color: #166534; }
+        .badge-gray { background: var(--border); color: var(--muted); }
+        .tab-bar { display: flex; background: var(--surface); border-radius: var(--radius); padding: 3px; margin-bottom: 12px; gap: 2px; }
+        .tab { flex: 1; padding: 8px 4px; text-align: center; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--muted); border: none; background: none; transition: all 0.2s; }
+        .tab.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(0,122,255,0.3); }
+        .empty { text-align: center; color: var(--muted); padding: 32px 20px; font-size: 15px; line-height: 1.5; }
+        .empty-icon { font-size: 40px; margin-bottom: 8px; }
+        .section-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 4px; margin: 20px 0 6px; }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .feed-url { font-family: "SF Mono", monospace; font-size: 12px; background: var(--bg); padding: 12px 16px; border-radius: 10px; word-break: break-all; color: var(--accent); margin-bottom: 12px; border: 1px solid var(--border); }
+
+        /* ── Inbyggd spelare ── */
+        .player {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: var(--player-height);
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: none;
+            flex-direction: column;
+            padding: 8px 16px;
+            z-index: 200;
+        }
+        .player.visible { display: flex; }
+        .player-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+        .player-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .list-item-subtitle {
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 2px;
-        }
-        .list-item-right {
+        .player-controls {
             display: flex;
-            gap: 8px;
             align-items: center;
-            margin-left: 12px;
-            flex-shrink: 0;
+            gap: 16px;
         }
-        .chevron {
-            color: var(--muted);
-            font-size: 14px;
-        }
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .badge-blue { background: #e8f0fe; color: var(--accent); }
-        .badge-green { background: #f0fdf4; color: #166534; }
-        .badge-gray { background: var(--border); color: var(--muted); }
-        .tab-bar {
-            display: flex;
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 3px;
-            margin-bottom: 12px;
-            gap: 2px;
-        }
-        .tab {
-            flex: 1;
-            padding: 8px 4px;
-            text-align: center;
-            border-radius: 9px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--muted);
-            border: none;
+        .player-btn {
             background: none;
-            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 22px;
+            padding: 4px;
+            color: var(--text);
         }
-        .tab.active {
+        .player-btn-main {
+            width: 36px;
+            height: 36px;
             background: var(--accent);
-            color: white;
-            box-shadow: 0 2px 8px rgba(0,122,255,0.3);
-        }
-        .empty {
-            text-align: center;
-            color: var(--muted);
-            padding: 32px 20px;
-            font-size: 15px;
-            line-height: 1.5;
-        }
-        .empty-icon { font-size: 40px; margin-bottom: 8px; }
-        .section-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0 4px;
-            margin: 20px 0 6px;
-        }
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .feed-url {
-            font-family: "SF Mono", monospace;
+        .player-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .player-time {
+            font-size: 11px;
+            color: var(--muted);
+            min-width: 36px;
+        }
+        .player-time-right { text-align: right; }
+        .progress-bar {
+            flex: 1;
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.5s linear;
+        }
+        .speed-btn {
+            background: var(--border);
+            border: none;
+            border-radius: 6px;
+            padding: 4px 7px;
             font-size: 12px;
-            background: var(--bg);
-            padding: 12px 16px;
-            border-radius: 10px;
-            word-break: break-all;
-            color: var(--accent);
-            margin-bottom: 12px;
-            border: 1px solid var(--border);
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text);
         }
+
         @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #000000;
-                --surface: #1c1c1e;
-                --surface2: #2c2c2e;
-                --border: #3a3a3c;
-                --text: #ffffff;
-                --muted: #8e8e93;
-            }
+            :root { --bg: #000000; --surface: #1c1c1e; --surface2: #2c2c2e; --border: #3a3a3c; --text: #ffffff; --muted: #8e8e93; }
             .header { background: rgba(28,28,30,0.85); }
+            .player { background: rgba(28,28,30,0.95); }
             .list-item.selected { background: #1a2a4a; }
+            .list-item.playing { background: #0d2a1a; }
             input { color: white; }
-            .tab.active { box-shadow: 0 2px 8px rgba(0,122,255,0.4); }
         }
     </style>
 </head>
@@ -320,8 +260,105 @@
         {% endif %}
     </div>
 </div>
+
 <div class="container">
     {% block content %}{% endblock %}
 </div>
+
+<!-- Inbyggd spelare -->
+<div class="player" id="player">
+    <div class="player-top">
+        <div class="player-title" id="playerTitle">Inget spelas</div>
+        <div class="player-controls">
+            <button class="player-btn" onclick="skipBack()">↺</button>
+            <button class="player-btn-main" id="playPauseBtn" onclick="togglePlay()">▶</button>
+            <button class="player-btn" onclick="skipForward()">↻</button>
+            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()">1×</button>
+        </div>
+    </div>
+    <div class="player-progress">
+        <span class="player-time" id="currentTime">0:00</span>
+        <div class="progress-bar" id="progressBar" onclick="seekTo(event)">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span class="player-time player-time-right" id="totalTime">0:00</span>
+    </div>
+</div>
+
+<audio id="audioPlayer" preload="metadata"></audio>
+
+<script>
+// PWA Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+}
+
+// Spelare
+const audio = document.getElementById('audioPlayer');
+const player = document.getElementById('player');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const playerTitle = document.getElementById('playerTitle');
+const progressFill = document.getElementById('progressFill');
+const currentTimeEl = document.getElementById('currentTime');
+const totalTimeEl = document.getElementById('totalTime');
+const speeds = [1, 1.25, 1.5, 1.75, 2];
+let speedIdx = 0;
+
+function playEpisode(url, title) {
+    audio.src = url;
+    playerTitle.textContent = title;
+    player.classList.add('visible');
+    audio.play();
+    playPauseBtn.textContent = '⏸';
+    document.querySelectorAll('.list-item').forEach(el => el.classList.remove('playing'));
+}
+
+function togglePlay() {
+    if (audio.paused) {
+        audio.play();
+        playPauseBtn.textContent = '⏸';
+    } else {
+        audio.pause();
+        playPauseBtn.textContent = '▶';
+    }
+}
+
+function skipBack() { audio.currentTime = Math.max(0, audio.currentTime - 15); }
+function skipForward() { audio.currentTime = Math.min(audio.duration, audio.currentTime + 30); }
+
+function cycleSpeed() {
+    speedIdx = (speedIdx + 1) % speeds.length;
+    audio.playbackRate = speeds[speedIdx];
+    document.getElementById('speedBtn').textContent = speeds[speedIdx] + '×';
+}
+
+function seekTo(e) {
+    const bar = document.getElementById('progressBar');
+    const pct = e.offsetX / bar.offsetWidth;
+    audio.currentTime = pct * audio.duration;
+}
+
+function formatTime(s) {
+    if (isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = pct + '%';
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+});
+
+audio.addEventListener('loadedmetadata', () => {
+    totalTimeEl.textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener('ended', () => {
+    playPauseBtn.textContent = '▶';
+});
+</script>
 </body>
 </html>
