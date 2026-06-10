@@ -676,19 +676,4 @@ if __name__ == "__main__":
     # Starta processing-worker
     threading.Thread(target=process_worker, daemon=True).start()
     print(f"🌐 CleanPod startar på port {CONFIG['server_port']}")
-    app.run(host="0.0.0.0", port=CONFIG["server_port"], debug=False)
-@app.route("/api/change_password", methods=["POST"])
-@login_required
-def api_change_password():
-    username = session["username"]
-    data     = request.json
-    old_pw   = data.get("old_password", "")
-    new_pw   = data.get("new_password", "")
-    users    = load_users()
-    if users[username]["password"] != hash_password(old_pw):
-        return jsonify({"ok": False, "error": "Fel nuvarande lösenord."})
-    if len(new_pw) < 6:
-        return jsonify({"ok": False, "error": "Lösenordet måste vara minst 6 tecken."})
-    users[username]["password"] = hash_password(new_pw)
-    save_users(users)
-    return jsonify({"ok": True})
+    app.run(host='0.0.0.0', port=CONFIG['server_port'], debug=False)
