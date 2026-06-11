@@ -25,7 +25,7 @@ CONFIG = {
     "app_name": "CleanPod",
     "max_users": 5,
     "server_port": 8080,
-    "base_url": "http://robertspodd.opik.net:8080",
+    "base_url": "https://cleanpod-production.up.railway.app",
     "whisper_model": "base",
     "language": "sv",
     "padding_ms": 8000,
