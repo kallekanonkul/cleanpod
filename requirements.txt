@@ -1,0 +1,6 @@
+flask
+feedparser
+requests
+anthropic
+openai
+yt-dlp
