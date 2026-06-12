@@ -26,7 +26,7 @@ CONFIG = {
     "max_users": 5,
     "server_port": 8080,
     "base_url": "https://cleanpod-production.up.railway.app",
-    "whisper_model": "base",
+    "whisper_model": "large-v3",
     "language": "sv",
     "padding_ms": 8000,
     "min_ad_duration_s": 3,
@@ -206,14 +206,14 @@ def download_episode(episode, out_dir):
     return candidates[0]
 
 def transcribe(audio_path, transcript_dir, model_size, language):
-    import whisper
     transcript_path = Path(transcript_dir) / (Path(audio_path).stem + ".json")
     if transcript_path.exists():
         with open(transcript_path) as f:
             return json.load(f)
-    model = whisper.load_model(model_size)
-    result = model.transcribe(str(audio_path), language=language, verbose=False)
-    segments = [{"start": s["start"], "end": s["end"], "text": s["text"].strip()} for s in result["segments"]]
+    from faster_whisper import WhisperModel
+    model = WhisperModel(model_size, device="cpu", compute_type="int8")
+    segments_iter, info = model.transcribe(str(audio_path), language=language, beam_size=5)
+    segments = [{"start": s.start, "end": s.end, "text": s.text.strip()} for s in segments_iter]
     with open(transcript_path, "w", encoding="utf-8") as f:
         json.dump(segments, f, ensure_ascii=False, indent=2)
     return segments
