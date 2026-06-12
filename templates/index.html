@@ -20,8 +20,7 @@
                 <div style="font-size:13px;color:var(--cyan);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Senast klar</div>
                 <div style="font-size:18px;font-weight:700;margin-bottom:4px">{{ f.name|replace('_clean.mp3','')|replace('_',' ')|truncate(45,True,'') }}</div>
                 <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Reklamfri · Klar att lyssna</div>
-                <button class="btn btn-primary" style="margin:0" onclick="playFile('/feed/{{ username }}/{{ f.name }}', '{{ f.name|replace(\'_clean.mp3\',\'\')|replace(\'_\',\' \') }}', '', '', 'hero')">▶ Spela nu</button>
-            </div>
+                <button class="btn btn-primary" style="margin:0" onclick="playFile('/feed/{{ username }}/{{ f.name }}', '{{ f.name }}', '', '', 'hero')">▶ Spela nu</button>
         </div>
     </div>
     {% endif %}
