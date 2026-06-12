@@ -1,157 +1,263 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="tab-bar">
-    <button class="tab active" onclick="showTab('podcasts')">🎙 Podcasts</button>
-    <button class="tab" onclick="showTab('episodes')">📋 Avsnitt</button>
-    <button class="tab" onclick="showTab('history')">🕐 Historik</button>
-    <button class="tab" onclick="showTab('lyssna')">▶ Lyssna</button>
-</div>
-
-<!-- PODCASTS -->
-<div id="tab-podcasts">
-    {% if feeds %}
-    <div class="section-label">Mina podcasts</div>
-    <div class="card">
-        {% for feed in feeds %}
-        <div class="list-item">
-            <div class="list-item-left" onclick="selectFeed('{{ feed.url }}', '{{ feed.name }}')">
-                <div class="list-item-title">{{ feed.name }}</div>
-                <div class="list-item-subtitle">{{ feed.url[:45] }}...</div>
-            </div>
-            <div class="list-item-right">
-                <button class="btn btn-primary btn-small" onclick="selectFeed('{{ feed.url }}', '{{ feed.name }}')">Välj</button>
-                <button class="btn btn-danger btn-small" onclick="removeFeed('{{ feed.url }}')">✕</button>
-            </div>
+<!-- HEM -->
+<div class="tab-page active" id="page-hem">
+    <div class="top-header">
+        <h1>Hem</h1>
+        <div class="top-header-right">
+            {% if is_admin %}<a href="/admin" class="icon-btn">⚙</a>{% endif %}
+            <a href="/settings" class="icon-btn">👤</a>
         </div>
-        {% endfor %}
     </div>
-    {% else %}
-    <div class="card">
-        <div class="empty">
-            <div class="empty-icon">🎙</div>
-            <strong>Inga podcasts än</strong><br>
-            Lägg till din första podcast nedan
+
+    {% if files %}
+    <div style="padding:0 16px;margin-bottom:24px">
+        {% set f = files[0] %}
+        <div style="background:var(--surface);border-radius:20px;overflow:hidden;cursor:pointer">
+            <div style="height:180px;background:linear-gradient(135deg,#7B5EA7,#00C2B2);display:flex;align-items:center;justify-content:center;font-size:80px">🎙</div>
+            <div style="padding:16px">
+                <div style="font-size:13px;color:var(--cyan);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Senast klar</div>
+                <div style="font-size:18px;font-weight:700;margin-bottom:4px">{{ f.name|replace('_clean.mp3','')|replace('_',' ')|truncate(45,True,'') }}</div>
+                <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Reklamfri · Klar att lyssna</div>
+                <button class="btn btn-primary" style="margin:0" onclick="playFile('/feed/{{ username }}/{{ f.name }}', '{{ f.name|replace(\'_clean.mp3\',\'\')|replace(\'_\',\' \') }}', '', '', 'hero')">▶ Spela nu</button>
+            </div>
         </div>
     </div>
     {% endif %}
 
-    <div class="section-label">Lägg till podcast</div>
-    <div class="card">
-        <div class="card-body">
-            <div class="input-group" style="margin-bottom:12px">
-                <input type="text" id="feedName" placeholder="Namn (t.ex. Alex & Sigge)">
-                <input type="url" id="feedUrl" placeholder="RSS-feed URL">
+    {% if feeds %}
+    <div style="margin-bottom:24px">
+        <div class="section-label">MINA PODCASTS</div>
+        <div class="hscroll" style="padding:0 16px">
+            {% for feed in feeds %}
+            <div style="flex-shrink:0;width:110px;cursor:pointer" onclick="openFeed('{{ feed.url }}','{{ feed.name }}')">
+                <div style="width:110px;height:110px;border-radius:16px;background:linear-gradient(135deg,#7B5EA7,#1a1a1a);display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:8px">🎙</div>
+                <div style="font-size:12px;font-weight:600;text-align:center;color:var(--text2);line-height:1.3">{{ feed.name|truncate(20,True,'') }}</div>
             </div>
-            <button class="btn btn-primary" onclick="addFeed()">Lägg till podcast</button>
-            <div id="addFeedMsg"></div>
-        </div>
-    </div>
-</div>
-
-<!-- AVSNITT -->
-<div id="tab-episodes" style="display:none">
-    <div class="section-label" id="episodesLabel">Välj en podcast först</div>
-    <div class="card" id="episodeCard">
-        <div class="empty">
-            <div class="empty-icon">👆</div>
-            Gå till Podcasts och tryck Välj
-        </div>
-    </div>
-    <div id="processCard" style="display:none">
-        <button class="btn btn-primary" onclick="processSelected()">▶ Bearbeta valt avsnitt</button>
-    </div>
-    <div id="statusSection" style="display:none">
-        <div class="section-label">Status</div>
-        <div class="card">
-            <div class="card-body">
-               <div class="status-box" id="statusBox">
-    <div id="progressSteps"></div>
-    <div id="statusMsg">Väntar...</div>
-</div>
+            {% endfor %}
+            <div style="flex-shrink:0;width:110px;cursor:pointer" onclick="switchTab('bibliotek')">
+                <div style="width:110px;height:110px;border-radius:16px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:8px;border:2px dashed var(--border)">+</div>
+                <div style="font-size:12px;font-weight:600;text-align:center;color:var(--muted)">Lägg till</div>
             </div>
         </div>
     </div>
-</div>
+    {% endif %}
 
-<!-- HISTORIK -->
-<div id="tab-history" style="display:none">
     {% if history %}
-    <div class="section-label">Bearbetade avsnitt</div>
-    <div class="card">
-        {% for h in history %}
-        <div class="list-item" style="cursor:default">
-            <div class="list-item-left">
-                <div class="list-item-title">{{ h.title[:50] }}</div>
-                <div class="list-item-subtitle">{{ h.podcast }} · {{ h.removed_s|int }}s borttaget · {{ h.date[:10] }}</div>
-            </div>
-            <div class="list-item-right">
+    <div class="section-label">HISTORIK</div>
+    <div style="padding:0 12px">
+        <div class="card">
+            {% for h in history[:5] %}
+            <div class="list-item">
+                <div class="list-thumb"><div class="list-thumb-placeholder">🎙</div></div>
+                <div class="list-info">
+                    <div class="list-title">{{ h.title|truncate(38,True,'') }}</div>
+                    <div class="list-sub">{{ h.podcast }} · {{ h.removed_s|int }}s borttaget · {{ h.date[:10] }}</div>
+                </div>
                 <span class="badge badge-green">✓</span>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
-    {% else %}
-    <div class="card">
-        <div class="empty">
-            <div class="empty-icon">🕐</div>
-            <strong>Ingen historik än</strong><br>
-            Bearbeta ett avsnitt för att komma igång
-        </div>
+    {% endif %}
+
+    {% if not feeds and not files %}
+    <div class="empty" style="margin-top:60px">
+        <div class="empty-icon">🎙</div>
+        <strong>Välkommen till CleanPod</strong>
+        <p>Gå till Bibliotek och lägg till din första podcast</p>
+        <button class="btn btn-primary" style="margin-top:20px;max-width:260px;margin-left:auto;margin-right:auto" onclick="switchTab('bibliotek')">Kom igång</button>
     </div>
     {% endif %}
 </div>
 
 <!-- LYSSNA -->
-<div id="tab-lyssna" style="display:none">
-    {% if files %}
-    <div class="section-label">Reklamfria avsnitt</div>
-    <div class="card">
-        {% for f in files %}
-        <div class="list-item" id="file_{{ loop.index }}">
-            <div class="list-item-left" onclick="playFile('/feed/{{ username }}/{{ f.name }}', '{{ f.name|replace('_clean.mp3','')|replace('_',' ') }}', 'file_{{ loop.index }}')">
-                <div class="list-item-title">{{ f.name|replace('_clean.mp3','')|replace('_',' ')|truncate(50,True,'') }}</div>
-                <div class="list-item-subtitle">Tryck för att lyssna</div>
-            </div>
-            <div class="list-item-right">
-<button class="btn btn-primary btn-small" onclick="playFile('/feed/{{ username }}/{{ f.name }}', '{{ f.name }}', 'file_{{ loop.index }}')">▶</button>
+<div class="tab-page" id="page-lyssna">
+    <div class="top-header">
+        <h1>Lyssna</h1>
+    </div>
+
+    <div id="episodeSection">
+        {% if feeds %}
+        <div class="section-label">VÄLJ PODCAST</div>
+        <div style="padding:0 12px">
+            <div class="card">
+                {% for feed in feeds %}
+                <div class="list-item" onclick="openFeed('{{ feed.url }}','{{ feed.name }}')">
+                    <div class="list-thumb"><div class="list-thumb-placeholder">🎙</div></div>
+                    <div class="list-info">
+                        <div class="list-title">{{ feed.name }}</div>
+                        <div class="list-sub">Tryck för att se avsnitt</div>
+                    </div>
+                    <div style="color:var(--muted);font-size:20px">›</div>
+                </div>
+                {% endfor %}
             </div>
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="card">
+        {% else %}
         <div class="empty">
-            <div class="empty-icon">🎧</div>
-            <strong>Inga avsnitt än</strong><br>
-            Bearbeta ett avsnitt så dyker det upp här
+            <div class="empty-icon">🎙</div>
+            <strong>Inga podcasts ännu</strong>
+            <p>Lägg till en podcast i Bibliotek</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="episodeListSection" style="display:none">
+        <div style="padding:0 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <button onclick="closeEpisodeList()" style="background:none;border:none;color:var(--accent);font-size:17px;cursor:pointer;padding:0;font-weight:600">← Tillbaka</button>
+            <span id="episodeListTitle" style="font-size:17px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        </div>
+        <div id="episodeListCard" style="padding:0 12px">
+            <div class="card"><div class="empty"><span class="spinner"></span>Hämtar avsnitt...</div></div>
+        </div>
+        <div id="processCard" style="display:none;padding:0 12px;margin-top:10px">
+            <button class="btn btn-primary" onclick="processSelected()">▶ Bearbeta valt avsnitt</button>
+        </div>
+        <div id="statusSection" style="display:none;padding:0 12px;margin-top:10px">
+            <div class="card card-padded">
+                <div class="status-box" id="statusBox">
+                    <div id="progressSteps"></div>
+                    <div id="statusMsg">Väntar...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- BIBLIOTEK -->
+<div class="tab-page" id="page-bibliotek">
+    <div class="top-header">
+        <h1>Bibliotek</h1>
+    </div>
+
+    {% if files %}
+    <div class="section-label">REKLAMFRIA AVSNITT</div>
+    <div style="padding:0 12px">
+        <div class="card">
+            {% for f in files %}
+            <div class="list-item" id="file_{{ loop.index }}">
+                <div class="list-thumb" onclick="playFile('/feed/{{ username }}/{{ f.name }}','{{ f.name }}','','','file_{{ loop.index }}')">
+                    <div class="list-thumb-placeholder">🎙</div>
+                </div>
+                <div class="list-info" onclick="playFile('/feed/{{ username }}/{{ f.name }}','{{ f.name }}','','','file_{{ loop.index }}')">
+                    <div class="list-title">{{ f.name|replace('_clean.mp3','')|replace('_',' ')|truncate(38,True,'') }}</div>
+                    <div class="list-sub">Reklamfri</div>
+                </div>
+                <div class="list-right">
+                    <button class="btn btn-primary btn-small" onclick="playFile('/feed/{{ username }}/{{ f.name }}','{{ f.name }}','','','file_{{ loop.index }}')">▶</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteFile('{{ f.name }}')">🗑</button>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
     {% endif %}
 
-    <div class="section-label">Din RSS-feed för Overcast</div>
-    <div class="card">
-        <div class="card-body">
+    <div class="section-label" style="margin-top:20px">MINA PODCASTS</div>
+    <div style="padding:0 12px">
+        {% if feeds %}
+        <div class="card" style="margin-bottom:10px">
+            {% for feed in feeds %}
+            <div class="list-item">
+                <div class="list-thumb"><div class="list-thumb-placeholder">🎙</div></div>
+                <div class="list-info">
+                    <div class="list-title">{{ feed.name }}</div>
+                    <div class="list-sub">{{ feed.url[:35] }}...</div>
+                </div>
+                <button class="btn btn-danger btn-small" onclick="removeFeed('{{ feed.url }}')">✕</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div id="addPodBtn">
+            <button class="btn btn-ghost" onclick="document.getElementById('addPodSection').style.display='block';document.getElementById('addPodBtn').style.display='none'">+ Lägg till podcast</button>
+        </div>
+        <div id="addPodSection" style="display:none">
+            <div class="input-group">
+                <input type="text" id="feedName" placeholder="Namn (t.ex. Alex & Sigge)">
+                <input type="url" id="feedUrl" placeholder="RSS-feed URL">
+            </div>
+            <button class="btn btn-primary" onclick="addFeed()">Lägg till</button>
+            <div id="addFeedMsg"></div>
+        </div>
+    </div>
+
+    <div class="section-label" style="margin-top:20px">DIN RSS-FEED</div>
+    <div style="padding:0 12px">
+        <div class="card card-padded">
+            <div style="font-size:13px;color:var(--text2);margin-bottom:10px">Prenumerera i Overcast:</div>
             <div class="feed-url">{{ config.base_url }}/feed/{{ username }}/feed.xml</div>
             <button class="btn btn-secondary" onclick="copyFeed()">Kopiera adress</button>
         </div>
+    </div>
+
+    <div style="padding:12px 12px 0">
+        <a href="/logout" class="btn btn-secondary" style="text-align:center;display:block">Logga ut</a>
+    </div>
+</div>
+
+<!-- SÖK -->
+<div class="tab-page" id="page-sok">
+    <div class="top-header">
+        <h1>Sök</h1>
+    </div>
+    <div style="padding:0 12px">
+        <div class="input-group">
+            <input type="text" id="searchInput" placeholder="Sök bland dina avsnitt..." oninput="doSearch()">
+        </div>
+        <div id="searchResults"></div>
     </div>
 </div>
 
 <script>
 let selectedEpisode = null;
 let selectedFeedName = '';
-let currentJobId = null;
+let currentJobId = localStorage.getItem('currentJobId') || null;
 let currentFileId = null;
 
-function showTab(name) {
-    ['podcasts','episodes','history','lyssna'].forEach((t, i) => {
-        document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
-        document.querySelectorAll('.tab')[i].classList.toggle('active', t === name);
-    });
+const STEPS = [
+    { label: '⬇️ Laddar ner avsnitt' },
+    { label: '🎙️ Transkriberar med Whisper' },
+    { label: '🔍 Detekterar reklam' },
+    { label: '🤖 AI-analys' },
+    { label: '✂️ Klipper reklam' },
+    { label: '💾 Sparar och uppdaterar feed' },
+];
+
+function getActiveStep(msg) {
+    if (!msg) return 0;
+    if (msg.includes('Laddar') || msg.includes('Skickar')) return 0;
+    if (msg.includes('Transkriberar') || msg.includes('Whisper')) return 1;
+    if (msg.includes('Detekterar')) return 2;
+    if (msg.includes('AI')) return 3;
+    if (msg.includes('Klipper')) return 4;
+    if (msg.includes('Klar') || msg.includes('Hämtar') || msg.includes('Sparar')) return 5;
+    return 0;
 }
 
-function playFile(url, title, fileId) {
+function renderSteps(msg, state) {
+    const active = state === 'done' ? 6 : getActiveStep(msg);
+    return STEPS.map((step, i) => {
+        let icon, color;
+        if (state === 'error') {
+            icon = i < active ? '✅' : i === active ? '❌' : '○';
+            color = i < active ? 'var(--success)' : i === active ? 'var(--error)' : 'var(--muted)';
+        } else if (i < active) {
+            icon = '✅'; color = 'var(--success)';
+        } else if (i === active) {
+            icon = '<span class="spinner"></span>'; color = 'var(--accent2)';
+        } else {
+            icon = '○'; color = 'var(--muted)';
+        }
+        return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;color:${color};font-size:14px">
+            <span style="width:20px;text-align:center">${icon}</span>${step.label}</div>`;
+    }).join('');
+}
+
+function playFile(url, title, podName, thumbUrl, fileId) {
     if (currentFileId) {
         const prev = document.getElementById(currentFileId);
         if (prev) prev.classList.remove('playing');
@@ -159,7 +265,98 @@ function playFile(url, title, fileId) {
     currentFileId = fileId;
     const el = document.getElementById(fileId);
     if (el) el.classList.add('playing');
-    playEpisode(url, title);
+    playEpisode(url, title, podName, thumbUrl);
+}
+
+async function openFeed(url, name) {
+    selectedFeedName = name;
+    selectedEpisode  = null;
+    document.getElementById('episodeSection').style.display = 'none';
+    document.getElementById('episodeListSection').style.display = 'block';
+    document.getElementById('episodeListTitle').textContent = name;
+    document.getElementById('processCard').style.display = 'none';
+    document.getElementById('statusSection').style.display = 'none';
+    document.getElementById('episodeListCard').innerHTML = '<div class="card"><div class="empty"><span class="spinner"></span>Hämtar avsnitt...</div></div>';
+    switchTab('lyssna');
+
+    const res  = await fetch('/api/episodes?url=' + encodeURIComponent(url));
+    const data = await res.json();
+
+    if (!data.episodes.length) {
+        document.getElementById('episodeListCard').innerHTML = '<div class="card"><div class="empty"><div class="empty-icon">😕</div><strong>Inga avsnitt</strong></div></div>';
+        return;
+    }
+
+    let html = '<div class="card">';
+    data.episodes.forEach((ep, i) => {
+        const epData = JSON.stringify(ep).replace(/'/g, "&#39;");
+        html += `<div class="list-item" onclick="selectEpisode(${i})" id="ep_${i}" data-ep='${epData}'>
+            <div class="list-thumb"><div class="list-thumb-placeholder">🎙</div></div>
+            <div class="list-info">
+                <div class="list-title">${ep.title.substring(0,48)}</div>
+                <div class="list-sub">${ep.published.substring(0,16)}</div>
+            </div>
+            <div style="color:var(--muted);font-size:20px">›</div>
+        </div>`;
+    });
+    html += '</div>';
+    document.getElementById('episodeListCard').innerHTML = html;
+}
+
+function closeEpisodeList() {
+    document.getElementById('episodeSection').style.display = 'block';
+    document.getElementById('episodeListSection').style.display = 'none';
+}
+
+function selectEpisode(i) {
+    document.querySelectorAll('#episodeListCard .list-item').forEach(el => el.classList.remove('selected'));
+    const el = document.getElementById('ep_' + i);
+    el.classList.add('selected');
+    selectedEpisode = JSON.parse(el.dataset.ep);
+    document.getElementById('processCard').style.display = 'block';
+}
+
+async function processSelected() {
+    if (!selectedEpisode) return;
+    document.getElementById('statusSection').style.display = 'block';
+    document.getElementById('statusBox').className = 'status-box status-running';
+    document.getElementById('progressSteps').innerHTML = renderSteps('Laddar', 'running');
+    document.getElementById('statusMsg').innerHTML = '<div style="margin-top:8px;font-size:13px;color:var(--text2)">⏳ Startar bearbetning...</div>';
+
+    const res  = await fetch('/api/process', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({episode: selectedEpisode, feed_name: selectedFeedName})
+    });
+    const data = await res.json();
+    if (data.ok) {
+        currentJobId = data.job_id;
+        localStorage.setItem('currentJobId', currentJobId);
+        pollStatus();
+    }
+}
+
+async function pollStatus() {
+    if (!currentJobId) return;
+    try {
+        const res  = await fetch('/api/status/' + currentJobId);
+        const data = await res.json();
+        const box  = document.getElementById('statusBox');
+        if (!box) { setTimeout(pollStatus, 5000); return; }
+        box.className = 'status-box status-' + data.state;
+        document.getElementById('progressSteps').innerHTML = renderSteps(data.message, data.state);
+        document.getElementById('statusMsg').innerHTML = `<div style="margin-top:8px;font-size:13px;color:var(--text2)">${data.message}</div>`;
+        if (data.state === 'running') {
+            setTimeout(pollStatus, 3000);
+        } else if (data.state === 'done') {
+            localStorage.removeItem('currentJobId');
+            setTimeout(() => location.reload(), 3000);
+        } else if (data.state === 'error') {
+            localStorage.removeItem('currentJobId');
+        }
+    } catch(e) {
+        setTimeout(pollStatus, 5000);
+    }
 }
 
 async function addFeed() {
@@ -167,7 +364,7 @@ async function addFeed() {
     const url  = document.getElementById('feedUrl').value.trim();
     const msg  = document.getElementById('addFeedMsg');
     if (!name || !url) {
-        msg.innerHTML = '<div class="alert alert-error" style="margin-top:8px">Fyll i både namn och URL.</div>';
+        msg.innerHTML = '<div class="alert alert-error">Fyll i både namn och URL.</div>';
         return;
     }
     const res  = await fetch('/api/add_feed', {
@@ -176,11 +373,8 @@ async function addFeed() {
         body: JSON.stringify({name, url})
     });
     const data = await res.json();
-    if (data.ok) {
-        location.reload();
-    } else {
-        msg.innerHTML = `<div class="alert alert-error" style="margin-top:8px">${data.error}</div>`;
-    }
+    if (data.ok) { location.reload(); }
+    else { msg.innerHTML = `<div class="alert alert-error">${data.error}</div>`; }
 }
 
 async function removeFeed(url) {
@@ -193,128 +387,56 @@ async function removeFeed(url) {
     location.reload();
 }
 
-async function selectFeed(url, name) {
-    selectedFeedName = name;
-    selectedEpisode  = null;
-    showTab('episodes');
-    document.getElementById('episodesLabel').textContent = name;
-    document.getElementById('episodeCard').innerHTML = '<div class="empty"><span class="spinner"></span>Hämtar avsnitt...</div>';
-    document.getElementById('processCard').style.display = 'none';
-    document.getElementById('statusSection').style.display = 'none';
-
-    const res  = await fetch('/api/episodes?url=' + encodeURIComponent(url));
-    const data = await res.json();
-
-    if (!data.episodes.length) {
-        document.getElementById('episodeCard').innerHTML = '<div class="empty"><div class="empty-icon">😕</div>Inga avsnitt hittades.</div>';
-        return;
-    }
-
-    let html = '';
-    data.episodes.forEach((ep, i) => {
-        const epData = JSON.stringify(ep).replace(/'/g, "&#39;");
-        html += `<div class="list-item" onclick="selectEpisode(${i})" id="ep_${i}" data-ep='${epData}'>
-            <div class="list-item-left">
-                <div class="list-item-title">${ep.title.substring(0,55)}</div>
-                <div class="list-item-subtitle">${ep.published.substring(0,16)}</div>
-            </div>
-            <div class="list-item-right" style="color:#8e8e93">›</div>
-        </div>`;
-    });
-    document.getElementById('episodeCard').innerHTML = html;
-}
-
-function selectEpisode(i) {
-    document.querySelectorAll('#episodeCard .list-item').forEach(el => el.classList.remove('selected'));
-    const el = document.getElementById('ep_' + i);
-    el.classList.add('selected');
-    selectedEpisode = JSON.parse(el.dataset.ep);
-    document.getElementById('processCard').style.display = 'block';
-}
-
-async function processSelected() {
-    if (!selectedEpisode) return;
-    document.getElementById('statusSection').style.display = 'block';
-document.getElementById('statusBox').className = 'status-box status-running';
-document.getElementById('progressSteps').innerHTML = renderSteps('Laddar', 'running');
-document.getElementById('statusMsg').innerHTML = '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,0.08);font-size:13px">⏳ Startar bearbetning...</div>';
-
-    const res  = await fetch('/api/process', {
+async function deleteFile(filename) {
+    if (!confirm('Ta bort avsnittet?')) return;
+    const res = await fetch('/api/delete_file', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({episode: selectedEpisode, feed_name: selectedFeedName})
+        body: JSON.stringify({filename})
     });
     const data = await res.json();
-    if (data.ok) {
-        currentJobId = data.job_id;
-        pollStatus();
-    }
-}
-
-const STEPS = [
-    { key: 'laddar',        label: '⬇️ Laddar ner avsnitt' },
-    { key: 'transkriberar', label: '🎙️ Transkriberar med Whisper' },
-    { key: 'detekterar',    label: '🔍 Detekterar reklam' },
-    { key: 'ai',            label: '🤖 AI-analys' },
-    { key: 'klipper',       label: '✂️ Klipper reklam' },
-    { key: 'sparar',        label: '💾 Sparar och uppdaterar feed' },
-];
-
-function getActiveStep(message) {
-    if (!message) return -1;
-    if (message.includes('Laddar')) return 0;
-    if (message.includes('Transkriberar')) return 1;
-    if (message.includes('Detekterar')) return 2;
-    if (message.includes('AI')) return 3;
-    if (message.includes('Klipper')) return 4;
-    if (message.includes('Klar') || message.includes('Sparar')) return 5;
-    return -1;
-}
-
-function renderSteps(message, state) {
-    const active = state === 'done' ? 6 : getActiveStep(message);
-    return STEPS.map((step, i) => {
-        let icon, color;
-        if (state === 'error') {
-            icon = i <= active ? (i < active ? '✅' : '❌') : '○';
-            color = i < active ? '#166534' : i === active ? '#ff3b30' : '#8e8e93';
-        } else if (i < active) {
-            icon = '✅'; color = '#166534';
-        } else if (i === active) {
-            icon = '<span class="spinner"></span>'; color = '#007aff';
-        } else {
-            icon = '○'; color = '#8e8e93';
-        }
-        return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;color:${color};font-size:14px">
-            <span style="width:20px;text-align:center">${icon}</span>
-            <span>${step.label}</span>
-        </div>`;
-    }).join('');
-}
-
-async function pollStatus() {
-    if (!currentJobId) return;
-    const res  = await fetch('/api/status/' + currentJobId);
-    const data = await res.json();
-    const box  = document.getElementById('statusBox');
-    box.className = 'status-box status-' + data.state;
-    document.getElementById('progressSteps').innerHTML = renderSteps(data.message, data.state);
-    document.getElementById('statusMsg').innerHTML =
-        `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,0.08);font-size:13px">${data.message}</div>`;
-    if (data.state === 'running') {
-        setTimeout(pollStatus, 3000);
-    } else if (data.state === 'done') {
-        setTimeout(() => location.reload(), 3000);
-    }
+    if (data.ok) { location.reload(); }
 }
 
 function copyFeed() {
     const url = '{{ config.base_url }}/feed/{{ username }}/feed.xml';
-    navigator.clipboard.writeText(url).then(() => {
-        alert('✓ Kopierad!');
-    }).catch(() => {
-        prompt('Kopiera:', url);
+    navigator.clipboard.writeText(url).then(() => alert('✓ Kopierad!')).catch(() => prompt('Kopiera:', url));
+}
+
+function doSearch() {
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    const files = {{ files | map(attribute='name') | list | tojson }};
+    if (!q) { document.getElementById('searchResults').innerHTML = ''; return; }
+    const hits = files.filter(f => f.toLowerCase().includes(q));
+    if (!hits.length) {
+        document.getElementById('searchResults').innerHTML = '<div class="empty"><p>Inga träffar</p></div>';
+        return;
+    }
+    let html = '<div class="card">';
+    hits.forEach((f, i) => {
+        html += `<div class="list-item" id="search_${i}">
+            <div class="list-thumb"><div class="list-thumb-placeholder">🎙</div></div>
+            <div class="list-info" onclick="playFile('/feed/{{ username }}/${f}','${f}','','','search_${i}')">
+                <div class="list-title">${f.replace('_clean.mp3','').replace(/_/g,' ')}</div>
+                <div class="list-sub">Reklamfri</div>
+            </div>
+            <button class="btn btn-primary btn-small" onclick="playFile('/feed/{{ username }}/${f}','${f}','','','search_${i}')">▶</button>
+        </div>`;
     });
+    html += '</div>';
+    document.getElementById('searchResults').innerHTML = html;
+}
+
+if (currentJobId) {
+    switchTab('lyssna');
+    document.getElementById('episodeSection').style.display = 'none';
+    document.getElementById('episodeListSection').style.display = 'block';
+    document.getElementById('episodeListTitle').textContent = 'Pågående bearbetning';
+    document.getElementById('statusSection').style.display = 'block';
+    document.getElementById('statusBox').className = 'status-box status-running';
+    document.getElementById('progressSteps').innerHTML = renderSteps('', 'running');
+    document.getElementById('statusMsg').innerHTML = '<div style="margin-top:8px;font-size:13px"><span class="spinner"></span>Återupptar...</div>';
+    pollStatus();
 }
 </script>
 {% endblock %}
